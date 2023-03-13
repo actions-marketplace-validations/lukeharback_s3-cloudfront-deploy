@@ -1,0 +1,49 @@
+name: "S3/Cloudfront: clear, copy & invalidate"
+description: "Deploy a static website to AWS S3 and invalidate CloudFront distribution"
+author: lukeharback
+
+inputs:
+  folder:
+    description: "Folder to sync to S3"
+    required: true
+  aws-ami-role:
+    description: "AWS IAM role to assume"
+    required: true
+  aws-region:
+    description: "AWS region"
+    required: true
+  aws-bucket:
+    description: "AWS S3 bucket name"
+    required: true
+  aws-distribution-id:
+    description: "AWS CloudFront distribution ID"
+    required: true
+  aws-invalidation-path:
+    description: "AWS CloudFront invalidation path"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: confiure-aws
+      name: Configure AWS credentials & region
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ inputs.aws-ami-role }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - id: clear-bucket
+      name: Clear s3 bucket
+      run: aws s3 rm s3://${{ inputs.aws-bucket }}/ --recursive
+
+    - id: copy-to-s3
+      name: Copy new website to s3
+      run: aws s3 cp ${{ inputs.folder }}/* s3://${{ inputs.aws-bucket }}/ --recursive
+
+    - id: invalidate-cloudfront
+      name: Clear cloundfront cache
+      run: aws cloudfront create-invalidation --distribution-id ${{ inputs.aws-distribution-id }} --paths ${{ inputs.aws-invalidation-path }}
+
+branding:
+  icon: upload-cloud
+  color: purple
