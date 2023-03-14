@@ -35,14 +35,17 @@ runs:
     - id: clear-bucket
       name: Clear s3 bucket
       run: aws s3 rm s3://${{ inputs.aws-bucket }}/ --recursive
+      shell: bash
 
     - id: copy-to-s3
       name: Copy new website to s3
       run: aws s3 cp ${{ inputs.folder }}/* s3://${{ inputs.aws-bucket }}/ --recursive
+      shell: bash
 
     - id: invalidate-cloudfront
       name: Clear cloundfront cache
       run: aws cloudfront create-invalidation --distribution-id ${{ inputs.aws-distribution-id }} --paths ${{ inputs.aws-invalidation-path }}
+      shell: bash
 
 branding:
   icon: upload-cloud
