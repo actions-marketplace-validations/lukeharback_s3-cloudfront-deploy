@@ -32,14 +32,9 @@ runs:
         role-to-assume: ${{ inputs.aws-ami-role }}
         aws-region: ${{ inputs.aws-region }}
 
-    - id: clear-bucket
-      name: Clear s3 bucket
-      run: aws s3 rm s3://${{ inputs.aws-bucket }}/ --recursive
-      shell: bash
-
-    - id: copy-to-s3
-      name: Copy new website to s3
-      run: aws s3 cp ${{ inputs.folder }}/* s3://${{ inputs.aws-bucket }}/ --recursive
+    - id: sync-to-s3
+      name: Sync new website to s3
+      run: aws s3 sync ${{ inputs.folder }} s3://${{ inputs.aws-bucket }}/ --delete
       shell: bash
 
     - id: invalidate-cloudfront
